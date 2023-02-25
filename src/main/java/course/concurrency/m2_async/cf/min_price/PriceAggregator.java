@@ -1,6 +1,8 @@
 package course.concurrency.m2_async.cf.min_price;
 
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.List;
 import java.util.Set;
 
 public class PriceAggregator {
@@ -18,7 +20,10 @@ public class PriceAggregator {
     }
 
     public double getMinPrice(long itemId) {
-        // здесь будет ваш код
-        return 0;
+
+        List<Double> prices = new ArrayList<>();
+        for (long shopId : shopIds)
+            prices.add(priceRetriever.getPrice(itemId, shopId));
+        return prices.stream().min(Double::compareTo).orElse(Double.NaN);
     }
 }
