@@ -5,14 +5,12 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Set;
 import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
+import java.util.stream.Collectors;
 
 public class PriceAggregator {
 
     private PriceRetriever priceRetriever = new PriceRetriever();
-    private ExecutorService executor = Executors.newCachedThreadPool();
 
     public void setPriceRetriever(PriceRetriever priceRetriever) {
         this.priceRetriever = priceRetriever;
@@ -25,22 +23,22 @@ public class PriceAggregator {
     }
 
     public double getMinPrice(long itemId) {
-        CompletableFuture<Double> futureResult = CompletableFuture.supplyAsync(() -> {
-            List<Double> prices = new ArrayList<>();
-            long timeOut = 3000 / shopIds.size();
-            for (long shopId : shopIds) {
-                CompletableFuture<Double> futurePrice =
-                        CompletableFuture.supplyAsync(() -> priceRetriever.getPrice(itemId, shopId), executor)
-                                .exceptionally(e -> {
-                                    System.out.println("Error!!! -> " + e);
-                                    return Double.NaN;
-                                });
-                prices.add(futurePrice.completeOnTimeout(Double.NaN, timeOut, TimeUnit.MILLISECONDS).join());
-            }
 
-            return prices.stream().min(Double::compareTo).orElse(Double.NaN);
-        });
+        List<Double> prices = new ArrayList<>();
+        CompletableFuture<Void> future = CompletableFuture.allOf(shopIds.stream()
+                        .map(shopId -> CompletableFuture.runAsync(() -> {
+                                    prices.add(priceRetriever.getPrice(itemId, shopId));
+                                }
+                        ))
+                        .collect(Collectors.toList())
+                        .toArray(CompletableFuture[]::new))
+                .exceptionally(e -> {
+                    System.out.println("Error!!! -> " + e);
+                    return null;
+                });
 
-        return futureResult.completeOnTimeout(Double.NaN, 2900, TimeUnit.MILLISECONDS).join();
+        future.completeOnTimeout(null, 2900, TimeUnit.MILLISECONDS).join();
+
+        return prices.stream().min(Double::compareTo).orElse(Double.NaN);
     }
 }
