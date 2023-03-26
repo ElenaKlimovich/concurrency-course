@@ -4,6 +4,7 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.CopyOnWriteArraySet;
 
 public class RestaurantService {
 
@@ -13,7 +14,7 @@ public class RestaurantService {
         put("C", new Restaurant("C"));
     }};
 
-    private Object stat;
+    private Map<String, Long> stat = new ConcurrentHashMap<>() ;
 
     public Restaurant getByName(String restaurantName) {
         addToStat(restaurantName);
@@ -21,11 +22,14 @@ public class RestaurantService {
     }
 
     public void addToStat(String restaurantName) {
-        // your code
+        stat.merge(restaurantName, 1L, Long::sum);
     }
 
     public Set<String> printStat() {
-        // your code
-        return new HashSet<>();
+        Set<String> print = new CopyOnWriteArraySet<>();
+        for (Map.Entry<String, Long> entry: stat.entrySet()) {
+            print.add(entry.getKey() + " - " + entry.getValue().toString());
+        }
+        return print;
     }
 }
