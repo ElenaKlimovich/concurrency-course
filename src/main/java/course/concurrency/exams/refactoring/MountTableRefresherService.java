@@ -1,8 +1,8 @@
 package course.concurrency.exams.refactoring;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.*;
+import java.util.stream.Collectors;
 
 
 public class MountTableRefresherService {
@@ -65,25 +65,18 @@ public class MountTableRefresherService {
      */
     public void refresh()  {
 
-        List<Others.RouterState> cachedRecords = routerStore.getCachedRecords();
-        List<MountTableRefresherThread> refreshThreads = new ArrayList<>();
-        for (Others.RouterState routerState : cachedRecords) {
-            String adminAddress = routerState.getAdminAddress();
-            if (adminAddress == null || adminAddress.length() == 0) {
-                // this router has not enabled router admin.
-                continue;
-            }
-            if (isLocalAdmin(adminAddress)) {
-                /*
-                 * Local router's cache update does not require RPC call, so no need for
-                 * RouterClient
-                 */
-                refreshThreads.add(getLocalRefresher(adminAddress));
-            } else {
-                refreshThreads.add(new MountTableRefresherThread(
-                            new Others.MountTableManager(adminAddress), adminAddress));
-            }
-        }
+        final List<Others.RouterState> cachedRecords = routerStore.getCachedRecords();
+        final List<MountTableRefresherThread> refreshThreads = cachedRecords.stream()
+                .filter(routerState -> routerState != null && routerState.getAdminAddress() != null && routerState.getAdminAddress().length() != 0)
+                .map(routerState -> {
+                    final String adminAddress = routerState.getAdminAddress();
+                    if (isLocalAdmin(adminAddress)) {
+                        return getLocalRefresher(adminAddress);
+                    }
+                    return new MountTableRefresherThread(new Others.MountTableManager(adminAddress), adminAddress);
+                })
+                .collect(Collectors.toList());
+
         if (!refreshThreads.isEmpty()) {
             invokeRefresh(refreshThreads);
         }

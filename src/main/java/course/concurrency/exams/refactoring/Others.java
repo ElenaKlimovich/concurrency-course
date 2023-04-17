@@ -57,7 +57,7 @@ public class Others {
         }
 
         public boolean refresh() {
-            return ThreadLocalRandom.current().nextBoolean();
+            return true;
         }
     }
 }
