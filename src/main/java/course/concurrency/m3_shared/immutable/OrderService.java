@@ -18,22 +18,18 @@ public class OrderService {
     }
 
     public void updatePaymentInfo(long orderId, PaymentInfo paymentInfo) {
-        currentOrders.compute(orderId, (k, v) -> {
-            Order order = currentOrders.get(orderId);
-            return new Order(orderId, order.getItems(), order.isPacked(), paymentInfo, Order.Status.IN_PROGRESS);
-        });
-        if (currentOrders.get(orderId).checkStatus()) {
-            deliver(currentOrders.get(orderId));
+        Order updated = currentOrders.compute(orderId,
+                (k, v) -> new Order(orderId, v.getItems(), v.isPacked(), paymentInfo, Order.Status.IN_PROGRESS));
+        if (updated.checkStatus()) {
+            deliver(updated);
         }
     }
 
     public void setPacked(long orderId) {
-        currentOrders.compute(orderId, (k, v) -> {
-            Order order = currentOrders.get(orderId);
-            return new Order(orderId, order.getItems(), true, order.getPaymentInfo(), Order.Status.IN_PROGRESS);
-        });
-        if (currentOrders.get(orderId).checkStatus()) {
-            deliver(currentOrders.get(orderId));
+        Order updated = currentOrders.compute(orderId,
+                (k, v) -> new Order(orderId, v.getItems(), true, v.getPaymentInfo(), Order.Status.IN_PROGRESS));
+        if (updated.checkStatus()) {
+            deliver(updated);
         }
     }
 
