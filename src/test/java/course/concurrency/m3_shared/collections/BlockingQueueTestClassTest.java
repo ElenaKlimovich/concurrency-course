@@ -146,14 +146,11 @@ class BlockingQueueTestClassTest {
     public void testOneThread() {
         BlockingQueueClass<String> bq = new BlockingQueueClass<>();
 
-        Thread single = new Thread(() -> {
-            for (int it = 0; it < 1_000; it++) {
-                bq.enqueue("" + it);
-                bq.dequeue();
-            }
-        });
+        for (int it = 0; it < 1_000; it++) {
+            bq.enqueue("" + it);
+            bq.dequeue();
+        }
 
-        single.start();
         assertEquals(0, bq.getCapacity());
     }
 
