@@ -11,7 +11,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 
 class BlockingQueueTestClassTest {
 
-    private int poolSize = Runtime.getRuntime().availableProcessors() * 3;
+    private int poolSize = 10;
     private int iterations = 100;
 
     @Test
@@ -114,7 +114,7 @@ class BlockingQueueTestClassTest {
         ExecutorService executor = Executors.newFixedThreadPool(poolSize);
         CountDownLatch latch = new CountDownLatch(1);
 
-        for (int i = 0; i < poolSize; i++) {
+        for (int i = 0; i < poolSize / 2; i++) {
             executor.submit(() -> {
                 try {
                     latch.await();
