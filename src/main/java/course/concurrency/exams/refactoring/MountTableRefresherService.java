@@ -115,7 +115,6 @@ public class MountTableRefresherService {
         if (!allReqCompleted) {
             log("Not all router admins updated their cache");
         }
-
         logResult(refreshThreads);
     }
 
@@ -147,7 +146,6 @@ public class MountTableRefresherService {
     public void setCacheUpdateTimeout(long cacheUpdateTimeout) {
         this.cacheUpdateTimeout = cacheUpdateTimeout;
     }
-
     public void setRouterClientsCache(Others.LoadingCache cache) {
         this.routerClientsCache = cache;
     }
