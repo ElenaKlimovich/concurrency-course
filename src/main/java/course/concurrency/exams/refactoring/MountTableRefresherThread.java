@@ -2,18 +2,22 @@ package course.concurrency.exams.refactoring;
 
 import static course.concurrency.exams.refactoring.Others.*;
 
-public class MountTableRefresher {
+import java.util.concurrent.CountDownLatch;
 
+public class MountTableRefresherThread extends Thread {
+
+    private boolean success;
     /** Admin server on which refreshed to be invoked. */
-    private final String adminAddress;
-    private final String name;
-    private final MountTableManager manager;
+    private String adminAddress;
+    private CountDownLatch countDownLatch;
+    private MountTableManager manager;
 
-    public MountTableRefresher(MountTableManager manager,
-                               String adminAddress) {
+    public MountTableRefresherThread(MountTableManager manager,
+                                     String adminAddress) {
         this.manager = manager;
         this.adminAddress = adminAddress;
-        this.name = ("MountTableRefresh_" + adminAddress);
+        setName("MountTableRefresh_" + adminAddress);
+        setDaemon(true);
     }
 
     /**
@@ -28,6 +32,31 @@ public class MountTableRefresher {
      * cache locally it need not to make RPC call. But R1 will make RPC calls to
      * update cache on R2 and R3.
      */
+    @Override
+    public void run() {
+        try {
+            success = manager.refresh();
+        } finally {
+            countDownLatch.countDown();
+        }
+    }
+
+    /**
+     * @return true if cache was refreshed successfully.
+     */
+    public boolean isSuccess() {
+        return success;
+    }
+
+    public void setCountDownLatch(CountDownLatch countDownLatch) {
+        this.countDownLatch = countDownLatch;
+    }
+
+    @Override
+    public String toString() {
+        return "MountTableRefreshThread [success=" + success + ", adminAddress="
+                + adminAddress + "]";
+    }
 
     public String getAdminAddress() {
         return adminAddress;
