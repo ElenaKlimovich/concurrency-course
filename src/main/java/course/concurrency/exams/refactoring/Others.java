@@ -4,7 +4,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ThreadLocalRandom;
 import java.util.concurrent.atomic.AtomicInteger;
 
 public class Others {
@@ -30,7 +29,7 @@ public class Others {
 
     public static class RouterState {
         private static AtomicInteger counter = new AtomicInteger(0);
-        private String adminAddress;
+        private final String adminAddress;
 
         public RouterState(String address) {
             this.adminAddress = address + counter.incrementAndGet();
@@ -42,16 +41,14 @@ public class Others {
     }
 
     public static class RouterStore {
-        List<RouterState> states = new ArrayList<>();
-
+        private final List<RouterState> states = new ArrayList<>();
         public List<RouterState> getCachedRecords() {
             return states;
         }
     }
 
     public static class MountTableManager {
-
-        private String address;
+        private final String address;
         public MountTableManager(String address) {
             this.address = address;
         }
