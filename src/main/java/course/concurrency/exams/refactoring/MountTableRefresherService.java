@@ -89,11 +89,10 @@ public class MountTableRefresherService {
     }
 
     private void invokeRefresh(List<MountTableRefresherThread> refreshThreads) {
-        CountDownLatch countDownLatch = new CountDownLatch(refreshThreads.size());
         // start all the threads
         List<CompletableFuture<Boolean>> futures = refreshThreads.stream()
                 .map(refThread -> CompletableFuture.supplyAsync(() -> {
-                            refThread.start();
+                            refThread.update();
                             return true;
                         })
                         .exceptionally(e -> {
